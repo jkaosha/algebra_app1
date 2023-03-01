@@ -20,9 +20,9 @@ class _MainAppState extends State<MainApp> {
   double canvasHeight = 400;
 
   var dataList = List.generate(
-    10,
+    11,
     (i) => List.generate(
-      10,
+      11,
       (j) => false,
       growable: false,
     ),
@@ -41,7 +41,7 @@ class _MainAppState extends State<MainApp> {
     int i = ((400 - y) / 40) as int;
     int j = x / 40 as int;
     dataList[i][j] ? dataList[i][j] = false : dataList[i][j] = true;
-    print(dataList);
+    //print(dataList);
   }
 
   @override
@@ -52,23 +52,18 @@ class _MainAppState extends State<MainApp> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Container(
-                // decoration: BoxDecoration(
-                //   border: Border.all(),
-                // ),
-                child: MouseRegion(
-                  onHover: _updateLocation,
-                  cursor: SystemMouseCursors.click,
-                  child: GestureDetector(
-                    onTap: _toggleDataPoint,
-                    child: SizedBox(
-                      width: canvasWidth,
-                      height: canvasHeight,
-                      child: CustomPaint(
-                        foregroundPainter: DataPointPainter(x, y),
-                        painter:
-                            GridPainter(canvasWidth, canvasHeight, dataList),
-                      ),
+              MouseRegion(
+                onHover: _updateLocation,
+                cursor: SystemMouseCursors.click,
+                child: GestureDetector(
+                  onTap: _toggleDataPoint,
+                  child: SizedBox(
+                    width: canvasWidth,
+                    height: canvasHeight,
+                    child: CustomPaint(
+                      foregroundPainter: CursorPainter(x, y),
+                      painter:
+                          GridPainter(canvasWidth, canvasHeight, dataList),
                     ),
                   ),
                 ),
@@ -118,9 +113,6 @@ class GridPainter extends CustomPainter {
         Offset(_canvasWidth * 1.05, yv),
         paint,
       );
-    }
-
-    for (int i = 0; i < 10; i++) {
       var r = _gridData[i];
       r.asMap().forEach((index, d) => {
           if (d)
@@ -154,10 +146,10 @@ class GridPainter extends CustomPainter {
   bool shouldRepaint(CustomPainter oldDelegate) => true;
 }
 
-class DataPointPainter extends CustomPainter {
+class CursorPainter extends CustomPainter {
   double _x = 0.0;
   double _y = 0.0;
-  DataPointPainter(x, y) {
+  CursorPainter(x, y) {
     _x = x;
     _y = y;
   }
