@@ -20,6 +20,14 @@ class _MainAppState extends State<MainApp> {
   double y = 0.0;
   double canvasWidth = 400;
   double canvasHeight = 400;
+  MySIEquation eqns = MySIEquation();
+  Map currentEquation = {};
+
+  @override
+  _MainAppState() {
+    currentEquation = eqns.getNextEquation();
+    print(currentEquation);
+  }
 
   var dataList = List.generate(
     11,
@@ -46,6 +54,33 @@ class _MainAppState extends State<MainApp> {
     //print(dataList);
   }
 
+  void nextEquation() {
+    currentEquation = eqns.getNextEquation();
+    print(currentEquation);
+  }
+
+  bool checkAnswer() {
+    bool correct = true;
+    int numPoints = 0;
+    for (int i = 0; i <= 10; i++) {
+      // grab the dots for the data points
+      var r = dataList[i];
+      r.asMap().forEach((index, d) {
+        if (d) {
+          numPoints++;
+        }
+        if (d &&
+            (i !=
+                currentEquation['slope'] * index +
+                    currentEquation['yIntercept'])) {
+          correct = false;
+        }
+      });
+    }
+    print(correct && numPoints > 1);
+    return (correct && numPoints > 1);
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -54,25 +89,72 @@ class _MainAppState extends State<MainApp> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              MouseRegion(
-                onHover: _updateLocation,
-                cursor: SystemMouseCursors.click,
-                child: GestureDetector(
-                  onTap: _toggleDataPoint,
-                  child: SizedBox(
-                    width: canvasWidth,
-                    height: canvasHeight,
-                    child: CustomPaint(
-                      foregroundPainter: CursorPainter(x, y),
-                      painter: GridPainter(canvasWidth, canvasHeight, dataList),
+              Padding(
+                padding: const EdgeInsets.all(30.0),
+                child: MouseRegion(
+                  onHover: _updateLocation,
+                  cursor: SystemMouseCursors.click,
+                  child: GestureDetector(
+                    onTap: _toggleDataPoint,
+                    child: SizedBox(
+                      width: canvasWidth,
+                      height: canvasHeight,
+                      child: CustomPaint(
+                        foregroundPainter: CursorPainter(x, y),
+                        painter:
+                            GridPainter(canvasWidth, canvasHeight, dataList),
+                      ),
                     ),
                   ),
                 ),
               ),
+              ActionButtons(nextEquation, checkAnswer),
             ],
           ),
         ),
       ),
+    );
+  }
+}
+
+class ActionButtons extends StatelessWidget {
+  late dynamic _nextEquation;
+  late dynamic _checkAnswer;
+
+  ActionButtons(
+    nextEquation,
+    checkAnswer, {
+    super.key,
+  }) {
+    _nextEquation = nextEquation;
+    _checkAnswer = checkAnswer;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>[
+        TextButton(
+          onPressed: () => showDialog<String>(
+            context: context,
+            builder: (BuildContext context) => AlertDialog(
+              content: Text(_checkAnswer() ? "Correct!" : "Incorrect"),
+              actions: <Widget>[
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text("Close"),
+                ),
+              ],
+            ),
+          ),
+          child: const Text("Check Answer"),
+        ),
+        TextButton(
+          onPressed: _nextEquation,
+          child: const Text("Next Equation"),
+        ),
+      ],
     );
   }
 }
@@ -193,18 +275,97 @@ class CursorPainter extends CustomPainter {
 }
 
 class MySIEquation {
-  double slope = 0.0;
-  double yIntercept = 0.0;
-  bool forceInteger = true;
-  bool forceFirstQuadrant = true;
-  Random r = Random();
+  static final List<int> _slopes = [
+    -3,
+    -3,
+    -2,
+    -2,
+    -2,
+    -2,
+    -2,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    2,
+    2,
+    2,
+    2,
+    2,
+    3,
+    3
+  ];
+  static final List<int> _yIntercepts = [
+    10,
+    9,
+    10,
+    9,
+    8,
+    7,
+    6,
+    10,
+    9,
+    8,
+    7,
+    6,
+    5,
+    4,
+    3,
+    7,
+    6,
+    5,
+    4,
+    3,
+    2,
+    1,
+    0,
+    4,
+    3,
+    2,
+    1,
+    0,
+    1,
+    0
+  ];
+  static List<Map> siEquationParams = [];
+  int _xDataMax = 3;
+  double _slope = 0.0;
+  double _yIntercept = 0.0;
+  bool _forceInteger = true;
+  bool _forceFirstQuadrant = true;
+  int currentEquation = 0;
 
   MySIEquation() {
-    slope = (-1) ^ (r.nextInt(1)) * (r.nextInt(5) + 1) as double;
-    yIntercept = slope.sign * -1 * r.nextInt((10 - slope.abs()) as int);
+    _slopes.asMap().forEach((index, s) => {
+          siEquationParams.add(
+            {
+              'slope': s,
+              'yIntercept': _yIntercepts[index],
+            },
+          )
+        });
+    siEquationParams.shuffle();
+    print(siEquationParams[currentEquation]);
   }
-}
 
-class MyEquations {
-  late List<MySIEquation> _equationList;
+  Map getNextEquation() {
+    if (currentEquation == siEquationParams.length) {
+      siEquationParams.shuffle();
+      currentEquation = 0;
+    }
+    currentEquation++;
+    return (siEquationParams[currentEquation - 1]);
+  }
 }
