@@ -19,11 +19,29 @@ class _MainAppState extends State<MainApp> {
   double canvasWidth = 400;
   double canvasHeight = 400;
 
+  var dataList = List.generate(
+    10,
+    (i) => List.generate(
+      10,
+      (j) => false,
+      growable: false,
+    ),
+    growable: false,
+  );
+
   void _updateLocation(PointerEvent details) {
     setState(() {
       x = (details.localPosition.dx / 40.0).round() * 40.0;
       y = (details.localPosition.dy / 40.0).round() * 40.0;
     });
+    //print((x/40).toString() + ", " + ((400-y)/40).toString());
+  }
+
+  void _toggleDataPoint() {
+    int i = ((400 - y) / 40) as int;
+    int j = x / 40 as int;
+    dataList[i][j] ? dataList[i][j] = false : dataList[i][j] = true;
+    print(dataList);
   }
 
   @override
@@ -41,12 +59,16 @@ class _MainAppState extends State<MainApp> {
                 child: MouseRegion(
                   onHover: _updateLocation,
                   cursor: SystemMouseCursors.click,
-                  child: SizedBox(
-                    width: canvasWidth,
-                    height: canvasHeight,
-                    child: CustomPaint(
-                      foregroundPainter: DataPointPainter(x, y),
-                      painter: GridPainter(canvasWidth, canvasHeight),
+                  child: GestureDetector(
+                    onTap: _toggleDataPoint,
+                    child: SizedBox(
+                      width: canvasWidth,
+                      height: canvasHeight,
+                      child: CustomPaint(
+                        foregroundPainter: DataPointPainter(x, y),
+                        painter:
+                            GridPainter(canvasWidth, canvasHeight, dataList),
+                      ),
                     ),
                   ),
                 ),
@@ -62,9 +84,12 @@ class _MainAppState extends State<MainApp> {
 class GridPainter extends CustomPainter {
   double _canvasWidth = 0.0;
   double _canvasHeight = 0.0;
-  GridPainter(width, height) {
+  late List<List<bool>> _gridData;
+
+  GridPainter(width, height, gridData) {
     _canvasWidth = width;
     _canvasHeight = height;
+    _gridData = gridData;
   }
 
   @override
@@ -78,6 +103,8 @@ class GridPainter extends CustomPainter {
 
     double xv = 0.0;
     double yv = 0.0;
+    List<Offset> dataPoints = [];
+
     for (int i = 0; i <= 10; i++) {
       xv = _canvasWidth / 10.0 * i;
       yv = _canvasWidth / 10.0 * i;
@@ -93,6 +120,19 @@ class GridPainter extends CustomPainter {
       );
     }
 
+    for (int i = 0; i < 10; i++) {
+      var r = _gridData[i];
+      r.asMap().forEach((index, d) => {
+          if (d)
+            {
+              dataPoints.add(Offset(
+                index * 40.0,
+                400 - i * 40 as double,
+              ))
+            }
+        });
+    }
+
     canvas.drawLine(
       Offset(0.0, -.05 * _canvasWidth),
       Offset(0.0, _canvasHeight),
@@ -103,6 +143,11 @@ class GridPainter extends CustomPainter {
       Offset(_canvasWidth * 1.05, _canvasHeight),
       paintAxes,
     );
+    var paint1 = Paint()
+      ..color = Colors.red
+      ..strokeCap = StrokeCap.round
+      ..strokeWidth = 10;
+    canvas.drawPoints(PointMode.points, dataPoints, paint1);
   }
 
   @override
