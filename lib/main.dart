@@ -108,7 +108,7 @@ class _MainAppState extends State<MainApp> {
                   ),
                 ),
               ),
-              ActionButtons(nextEquation, checkAnswer),
+              ActionButtons(),
             ],
           ),
         ),
@@ -117,17 +117,23 @@ class _MainAppState extends State<MainApp> {
   }
 }
 
-class ActionButtons extends StatelessWidget {
-  late dynamic _nextEquation;
-  late dynamic _checkAnswer;
-
-  ActionButtons(
-    nextEquation,
-    checkAnswer, {
+class ActionButtons extends StatefulWidget {
+  const ActionButtons({
     super.key,
-  }) {
-    _nextEquation = nextEquation;
-    _checkAnswer = checkAnswer;
+  });
+
+  @override
+  State<ActionButtons> createState() => _ActionButtonsState();
+}
+
+class _ActionButtonsState extends State<ActionButtons> {
+   dynamic _nextEquation () {};
+   dynamic _checkAnswer () {};
+
+  @override
+  _ActionButtonsState() {
+    _nextEquation = _MainAppState().nextEquation;
+    _checkAnswer = _MainAppState().checkAnswer;
   }
 
   @override
