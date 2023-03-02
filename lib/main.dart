@@ -108,7 +108,10 @@ class _MainAppState extends State<MainApp> {
                   ),
                 ),
               ),
-              ActionButtons(),
+              ActionButtons(
+                checkAnswer: checkAnswer,
+                nextEquation: nextEquation,
+              ),
             ],
           ),
         ),
@@ -117,24 +120,11 @@ class _MainAppState extends State<MainApp> {
   }
 }
 
-class ActionButtons extends StatefulWidget {
-  const ActionButtons({
-    super.key,
-  });
-
-  @override
-  State<ActionButtons> createState() => _ActionButtonsState();
-}
-
-class _ActionButtonsState extends State<ActionButtons> {
-   dynamic _nextEquation () {};
-   dynamic _checkAnswer () {};
-
-  @override
-  _ActionButtonsState() {
-    _nextEquation = _MainAppState().nextEquation;
-    _checkAnswer = _MainAppState().checkAnswer;
-  }
+class ActionButtons extends StatelessWidget {
+  final dynamic checkAnswer;
+  final dynamic nextEquation;
+  const ActionButtons(
+      {required this.checkAnswer, required this.nextEquation, super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -142,22 +132,27 @@ class _ActionButtonsState extends State<ActionButtons> {
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
         TextButton(
-          onPressed: () => showDialog<String>(
-            context: context,
-            builder: (BuildContext context) => AlertDialog(
-              content: Text(_checkAnswer() ? "Correct!" : "Incorrect"),
-              actions: <Widget>[
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text("Close"),
-                ),
-              ],
-            ),
-          ),
+          onPressed: () {
+            bool correct = checkAnswer();
+            showDialog<String>(
+              context: context,
+              builder: (BuildContext context) => AlertDialog(
+                content: Text(correct ? "Correct!" : "Incorrect"),
+                actions: <Widget>[
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text("Close"),
+                  ),
+                ],
+              ),
+            );
+          },
           child: const Text("Check Answer"),
         ),
         TextButton(
-          onPressed: _nextEquation,
+          onPressed: () {
+            nextEquation();
+          },
           child: const Text("Next Equation"),
         ),
       ],
