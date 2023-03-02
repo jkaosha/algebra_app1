@@ -2,8 +2,6 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 
-import 'dart:math';
-
 void main() {
   runApp(const MainApp());
 }
@@ -22,27 +20,34 @@ class _MainAppState extends State<MainApp> {
   double canvasHeight = 400;
   MySIEquation eqns = MySIEquation();
   Map currentEquation = {};
+  bool drawCursor = false;
 
   @override
   _MainAppState() {
     currentEquation = eqns.getNextEquation();
+    _resetDataList();
     print(currentEquation);
   }
 
-  var dataList = List.generate(
-    11,
-    (i) => List.generate(
+  List<List<bool>> dataList = [];
+
+  void _resetDataList() {
+    dataList = List.generate(
       11,
-      (j) => false,
+      (i) => List.generate(
+        11,
+        (j) => false,
+        growable: false,
+      ),
       growable: false,
-    ),
-    growable: false,
-  );
+    );
+  }
 
   void _updateLocation(PointerEvent details) {
     setState(() {
       x = (details.localPosition.dx / 40.0).round() * 40.0;
       y = (details.localPosition.dy / 40.0).round() * 40.0;
+      drawCursor = true;
     });
     //print((x/40).toString() + ", " + ((400-y)/40).toString());
   }
@@ -50,12 +55,13 @@ class _MainAppState extends State<MainApp> {
   void _toggleDataPoint() {
     int i = ((400 - y) / 40) as int;
     int j = x / 40 as int;
-    dataList[i][j] ? dataList[i][j] = false : dataList[i][j] = true;
+    setState(
+        () => dataList[i][j] ? dataList[i][j] = false : dataList[i][j] = true);
     //print(dataList);
   }
 
   void nextEquation() {
-    currentEquation = eqns.getNextEquation();
+    setState(() => currentEquation = eqns.getNextEquation());
     print(currentEquation);
   }
 
@@ -83,16 +89,36 @@ class _MainAppState extends State<MainApp> {
 
   @override
   Widget build(BuildContext context) {
+    String eqnString = "y = ";
+    eqnString += currentEquation['slope'].sign < 0 ? "−" : "";
+
+    eqnString += currentEquation['slope'].abs() != 1
+        ? currentEquation['slope'].abs().toString()
+        : "";
+
+    eqnString += "x";
+
+    eqnString += currentEquation['yIntercept'] != 0
+        ? " + ${currentEquation['yIntercept']}"
+        : "";
+
     return MaterialApp(
       home: Scaffold(
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              Text(
+                "Graph $eqnString",
+                style: const TextStyle(fontSize: 18),
+              ),
               Padding(
                 padding: const EdgeInsets.all(30.0),
                 child: MouseRegion(
                   onHover: _updateLocation,
+                  onExit: (p) {
+                    setState(() => drawCursor = false);
+                  },
                   cursor: SystemMouseCursors.click,
                   child: GestureDetector(
                     onTap: _toggleDataPoint,
@@ -100,7 +126,7 @@ class _MainAppState extends State<MainApp> {
                       width: canvasWidth,
                       height: canvasHeight,
                       child: CustomPaint(
-                        foregroundPainter: CursorPainter(x, y),
+                        foregroundPainter: CursorPainter(x, y, drawCursor),
                         painter:
                             GridPainter(canvasWidth, canvasHeight, dataList),
                       ),
@@ -111,6 +137,12 @@ class _MainAppState extends State<MainApp> {
               ActionButtons(
                 checkAnswer: checkAnswer,
                 nextEquation: nextEquation,
+              ),
+              TextButton(
+                onPressed: () {
+                  setState(() => _resetDataList());
+                },
+                child: const Text("Clear graph"),
               ),
             ],
           ),
@@ -257,9 +289,11 @@ class GridPainter extends CustomPainter {
 class CursorPainter extends CustomPainter {
   double _x = 0.0;
   double _y = 0.0;
-  CursorPainter(x, y) {
+  bool _drawCursor = false;
+  CursorPainter(x, y, drawCursor) {
     _x = x;
     _y = y;
+    _drawCursor = drawCursor;
   }
 
   @override
@@ -267,7 +301,7 @@ class CursorPainter extends CustomPainter {
     var paint1 = Paint()
       ..color = Colors.blue
       ..strokeCap = StrokeCap.round
-      ..strokeWidth = 10;
+      ..strokeWidth = _drawCursor ? 10 : 0;
     canvas.drawPoints(PointMode.points, [Offset(_x, _y)], paint1);
   }
 
