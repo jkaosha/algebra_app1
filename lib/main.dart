@@ -146,6 +146,9 @@ class _MainAppState extends State<MainApp> {
                 },
                 child: const Text("Clear graph"),
               ),
+              const Padding(
+                padding: EdgeInsets.all(20.0),
+              ),
               Card(
                 color: theme.colorScheme.primary,
                 child: const Padding(
