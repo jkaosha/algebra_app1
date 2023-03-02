@@ -102,6 +102,8 @@ class _MainAppState extends State<MainApp> {
         ? " + ${currentEquation['yIntercept']}"
         : "";
 
+    var theme = Theme.of(context);
+
     return MaterialApp(
       home: Scaffold(
         body: Center(
@@ -143,6 +145,19 @@ class _MainAppState extends State<MainApp> {
                   setState(() => _resetDataList());
                 },
                 child: const Text("Clear graph"),
+              ),
+              Card(
+                color: theme.colorScheme.primary,
+                child: const Padding(
+                  padding: EdgeInsets.all(8.0),
+                  child: Text(
+                    "South Hills Academy",
+                    style: TextStyle(
+                      fontSize: 10.0,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
               ),
             ],
           ),
