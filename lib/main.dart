@@ -47,7 +47,7 @@ class _MainAppState extends State<MainApp> {
     setState(() {
       x = (details.localPosition.dx / 40.0).round() * 40.0;
       y = (details.localPosition.dy / 40.0).round() * 40.0;
-      drawCursor = true;
+      //drawCursor = true;
     });
     //print((x/40).toString() + ", " + ((400-y)/40).toString());
   }
