@@ -18,6 +18,7 @@ class _MainAppState extends State<MainApp> {
   double y = 0.0;
   double canvasWidth = 400;
   double canvasHeight = 400;
+  double gridSize = 40;
   MySIEquation eqns = MySIEquation();
   Map currentEquation = {};
   bool drawCursor = false;
@@ -33,9 +34,9 @@ class _MainAppState extends State<MainApp> {
 
   void _resetDataList() {
     dataList = List.generate(
-      11,
+      (canvasHeight/gridSize as int) + 1,
       (i) => List.generate(
-        11,
+        (canvasWidth/gridSize as int) + 1,
         (j) => false,
         growable: false,
       ),
@@ -45,18 +46,18 @@ class _MainAppState extends State<MainApp> {
 
   void _updateLocation(PointerEvent details) {
     setState(() {
-      x = (details.localPosition.dx / 40.0).round() * 40.0;
-      y = (details.localPosition.dy / 40.0).round() * 40.0;
-      //drawCursor = true;
+      x = (details.localPosition.dx / gridSize).round() * gridSize;
+      y = (details.localPosition.dy / gridSize).round() * gridSize;
+      drawCursor = true;
     });
     //print((x/40).toString() + ", " + ((400-y)/40).toString());
   }
 
   void _toggleDataPoint(TapDownDetails details) {
-    x = (details.localPosition.dx / 40.0).round() * 40.0;
-    y = (details.localPosition.dy / 40.0).round() * 40.0;
-    int i = ((400 - y) / 40) as int;
-    int j = x / 40 as int;
+    x = (details.localPosition.dx / gridSize).round() * gridSize;
+    y = (details.localPosition.dy / gridSize).round() * gridSize;
+    int i = ((canvasWidth - y) / gridSize) as int;
+    int j = x / gridSize as int;
     setState(() {
       dataList[i][j] ? dataList[i][j] = false : dataList[i][j] = true;
       drawCursor = false;
@@ -72,7 +73,7 @@ class _MainAppState extends State<MainApp> {
   bool checkAnswer() {
     bool correct = true;
     int numPoints = 0;
-    for (int i = 0; i <= 10; i++) {
+    for (int i = 0; i <= (canvasHeight/gridSize as int); i++) {
       // grab the dots for the data points
       var r = dataList[i];
       r.asMap().forEach((index, d) {
@@ -134,7 +135,7 @@ class _MainAppState extends State<MainApp> {
                       child: CustomPaint(
                         foregroundPainter: CursorPainter(x, y, drawCursor),
                         painter:
-                            GridPainter(canvasWidth, canvasHeight, dataList),
+                            GridPainter(canvasWidth, canvasHeight, gridSize, dataList),
                       ),
                     ),
                   ),
@@ -217,12 +218,14 @@ class ActionButtons extends StatelessWidget {
 class GridPainter extends CustomPainter {
   double _canvasWidth = 0.0;
   double _canvasHeight = 0.0;
+  double _gridSize = 0.0;
   late List<List<bool>> _gridData;
 
-  GridPainter(width, height, gridData) {
+  GridPainter(width, height, gridSize, gridData) {
     _canvasWidth = width;
     _canvasHeight = height;
     _gridData = gridData;
+    _gridSize = gridSize;
   }
 
   @override
@@ -238,9 +241,9 @@ class GridPainter extends CustomPainter {
     double yh = 0.0;
     List<Offset> dataPoints = [];
 
-    for (int i = 0; i <= 10; i++) {
-      xv = _canvasWidth / 10.0 * i;
-      yh = _canvasHeight / 10.0 * i;
+    for (int i = 0; i <= (_canvasHeight/_gridSize as int); i++) {
+      xv = _gridSize * i;
+      yh = _gridSize * i;
       canvas.drawLine(
         Offset(xv, -.05 * _canvasWidth),
         Offset(xv, _canvasHeight),
@@ -252,7 +255,7 @@ class GridPainter extends CustomPainter {
         textDirection: TextDirection.ltr,
       )..layout(maxWidth: size.width * 0.1);
       textPainter.paint(canvas, Offset(xv - 4, _canvasHeight + 5));
-      textPainter.paint(canvas, Offset(-20, _canvasHeight - i * 40.0 - 6));
+      textPainter.paint(canvas, Offset(-20, _canvasHeight - i * _gridSize - 6));
 
       canvas.drawLine(
         Offset(0.0, yh),
@@ -265,8 +268,8 @@ class GridPainter extends CustomPainter {
             if (d)
               {
                 dataPoints.add(Offset(
-                  index * 40.0,
-                  400 - i * 40 as double,
+                  index * _gridSize,
+                  _canvasWidth - i * _gridSize,
                 ))
               }
           });
