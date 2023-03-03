@@ -52,7 +52,7 @@ class _MainAppState extends State<MainApp> {
     //print((x/40).toString() + ", " + ((400-y)/40).toString());
   }
 
-  void _toggleDataPoint(PointerEvent details) {
+  void _toggleDataPoint(TapDownDetails details) {
     x = (details.localPosition.dx / 40.0).round() * 40.0;
     y = (details.localPosition.dy / 40.0).round() * 40.0;
     int i = ((400 - y) / 40) as int;
