@@ -52,7 +52,9 @@ class _MainAppState extends State<MainApp> {
     //print((x/40).toString() + ", " + ((400-y)/40).toString());
   }
 
-  void _toggleDataPoint() {
+  void _toggleDataPoint(PointerEvent details) {
+    x = (details.localPosition.dx / 40.0).round() * 40.0;
+    y = (details.localPosition.dy / 40.0).round() * 40.0;
     int i = ((400 - y) / 40) as int;
     int j = x / 40 as int;
     setState(() {
@@ -125,7 +127,7 @@ class _MainAppState extends State<MainApp> {
                   },
                   cursor: SystemMouseCursors.click,
                   child: GestureDetector(
-                    onTap: _toggleDataPoint,
+                    onTapDown: _toggleDataPoint,
                     child: SizedBox(
                       width: canvasWidth,
                       height: canvasHeight,
