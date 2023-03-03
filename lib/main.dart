@@ -55,8 +55,10 @@ class _MainAppState extends State<MainApp> {
   void _toggleDataPoint() {
     int i = ((400 - y) / 40) as int;
     int j = x / 40 as int;
-    setState(
-        () => dataList[i][j] ? dataList[i][j] = false : dataList[i][j] = true);
+    setState(() {
+      dataList[i][j] ? dataList[i][j] = false : dataList[i][j] = true;
+      drawCursor = false;
+    });
     //print(dataList);
   }
 
